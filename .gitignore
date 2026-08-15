@@ -1,3 +1,4 @@
 # Compiled binary
 /quadtree
 *.o
+/build

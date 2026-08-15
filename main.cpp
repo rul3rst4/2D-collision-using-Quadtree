@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <optional>
 #include <random>
 #include <vector>
 
@@ -18,8 +19,8 @@ public:
     Particle(int x, int y)
     {
         circle.setRadius(4);
-        circle.setOrigin(4, 4);
-        circle.setPosition(x, y);
+        circle.setOrigin({4.f, 4.f});
+        circle.setPosition({static_cast<float>(x), static_cast<float>(y)});
         circle.setFillColor(sf::Color::Black);
         highlight = false;
     }
@@ -28,7 +29,8 @@ public:
 
     void move()
     {
-        circle.move(std::uniform_int_distribution<>(-1, 1)(eng), std::uniform_int_distribution<>(-1, 1)(eng));
+        circle.move({static_cast<float>(std::uniform_int_distribution<>(-1, 1)(eng)),
+            static_cast<float>(std::uniform_int_distribution<>(-1, 1)(eng))});
     }
     void render(sf::RenderWindow& window)
     {
@@ -47,7 +49,7 @@ public:
 
     bool intersects(Particle* p)
     {
-        return (this->circle.getGlobalBounds().intersects(p->getBounds()));
+        return this->circle.getGlobalBounds().findIntersection(p->getBounds()).has_value();
     }
 
 private:
@@ -175,8 +177,8 @@ public:
         divided        = false;
 
         rect.setSize(sf::Vector2f(boundary->getW() * 2, boundary->getH() * 2));
-        rect.setOrigin((boundary->getW() * 2) / 2, (boundary->getH() * 2) / 2);
-        rect.setPosition(boundary->getX(), boundary->getY());
+        rect.setOrigin({(boundary->getW() * 2) / 2, (boundary->getH() * 2) / 2});
+        rect.setPosition({boundary->getX(), boundary->getY()});
         rect.setFillColor(sf::Color::Transparent);
         rect.setOutlineThickness(1);
         rect.setOutlineColor(sf::Color::Black);
@@ -309,7 +311,7 @@ public:
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(windowW, windowH), "Quadtree collision");
+    sf::RenderWindow window(sf::VideoMode({static_cast<unsigned int>(windowW), static_cast<unsigned int>(windowH)}), "Quadtree collision");
     // window.setFramerateLimit(60);
     std::mt19937 eng {std::chrono::high_resolution_clock::now().time_since_epoch().count()};
 
@@ -329,10 +331,9 @@ int main()
 
     while (window.isOpen())
     {
-        sf::Event event;
-        while (window.pollEvent(event))
+        while (const std::optional event = window.pollEvent())
         {
-            if (event.type == sf::Event::Closed)
+            if (event->is<sf::Event::Closed>())
             {
                 window.close();
             }
@@ -340,7 +341,7 @@ int main()
 
         window.clear(sf::Color::White);
         time = clock.getElapsedTime();
-        clock.restart().asSeconds();
+        clock.restart();
         printf("%f\n", 1.0f / time.asSeconds());
 
         QuadTree* qtree = new QuadTree(boundary, 4);
