@@ -1,4 +1,14 @@
 cmake_minimum_required(VERSION 3.28)
+
+# Prefer g++ when the caller has not chosen a compiler. Some images point
+# /usr/bin/c++ at clang++ with a GCC libstdc++ that is not installed.
+if(NOT DEFINED CMAKE_CXX_COMPILER AND NOT DEFINED ENV{CXX})
+    find_program(QUADTREE_GXX NAMES g++)
+    if(QUADTREE_GXX)
+        set(CMAKE_CXX_COMPILER "${QUADTREE_GXX}")
+    endif()
+endif()
+
 project(quadtree LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

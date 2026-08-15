@@ -341,7 +341,7 @@ int main()
 
         window.clear(sf::Color::White);
         time = clock.getElapsedTime();
-        clock.restart().asSeconds();
+        clock.restart();
         printf("%f\n", 1.0f / time.asSeconds());
 
         QuadTree* qtree = new QuadTree(boundary, 4);
